@@ -96,35 +96,82 @@ class _AssignmentListScreenState extends State<AssignmentListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Assignments'),
-      ),
-      body: ListView.builder(
-        itemCount: assignments.length,
-        itemBuilder: (context, index) {
-          final assignment = assignments[index];
-          return ListTile(
-            leading: Checkbox(
-              value: assignment['completed'] ?? false,
-              onChanged: (value) => _toggleAssignmentCompletion(index, value),
+        title: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.assignment, size: 24),
+            SizedBox(width: 8),
+            Text(
+              'Assignments',
+              style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2),
             ),
-            title: Text(assignment['title']),
-            subtitle: Text(assignment['description']),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.blue),
-                  onPressed: () => _showAssignmentDialog(context, index: index),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () => _deleteAssignment(index),
-                ),
-              ],
-            ),
-          );
-        },
+          ],
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.amber,
+        foregroundColor: Colors.black,
+        elevation: 4,
+        shadowColor: Colors.black45,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(20),
+          ),
+        ),
       ),
+      body: assignments.isEmpty
+          ? const Center(
+              child: Text(
+                'No assignments yet',
+                style: TextStyle(fontSize: 16),
+              ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(12),
+              itemCount: assignments.length,
+              itemBuilder: (context, index) {
+                final assignment = assignments[index];
+                final dueDate = assignment['dueDate'] as DateTime?;
+
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: ListTile(
+                    leading: Checkbox(
+                      value: assignment['completed'] ?? false,
+                      onChanged: (value) => _toggleAssignmentCompletion(index, value),
+                    ),
+                    title: Text(
+                      assignment['title'],
+                      style: TextStyle(
+                        decoration: assignment['completed'] ? TextDecoration.lineThrough : null,
+                      ),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(assignment['description']),
+                        if (dueDate != null)
+                          Text(
+                            'Due: ${dueDate.toLocal().toIso8601String().split('T').first}',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                      ],
+                    ),
+                  trailing: Wrap(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          onPressed: () => _showAssignmentDialog(context, index: index),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () => _deleteAssignment(index),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAssignmentDialog(context),
         child: const Icon(Icons.add),
